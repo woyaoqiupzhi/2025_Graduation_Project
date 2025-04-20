@@ -24,12 +24,12 @@ def myframe_resize(frame):
     return frame
 
 def show_frame(frame, show_area):
-    frame = myframe_resize(frame)          # opencv读取的bgr格式图片转换成rgb格式
+    frame = myframe_resize(frame)
     img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     _image = QtGui.QImage(img[:], img.shape[1], img.shape[0], img.shape[1] * 3,
-                          QtGui.QImage.Format_RGB888)  # pyqt5转换成自己能放的图片格式
-    jpg_out = QtGui.QPixmap(_image)  # 转换成QPixmap
-    show_area.setPixmap(jpg_out)  # 设置图片显示
+                          QtGui.QImage.Format_RGB888)
+    jpg_out = QtGui.QPixmap(_image)
+    show_area.setPixmap(jpg_out)
 
 class FaceMainwindow(QMainWindow, tcp_moudle_ui):
     def __init__(self):
@@ -49,14 +49,11 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
         self.stopEvent_control.clear()
         self.save_flag = 0
         self.font = cv2.FONT_ITALIC
-        # FPS
         self.frame_time = 0
         self.frame_start_time = 0
         self.fps = 0
-        # 录入人脸计数器 / cnt for counting faces in current frame
         self.current_frame_faces_cnt = 0
-        # TCP连接
-        self.link = False  # 用于标记是否开启了连接
+        self.link = False
         self.tcp_socket = None
         self.sever_th = None
         self.client_th = None
@@ -78,21 +75,12 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
         self.recognitionpage.closecam_btn.clicked.connect(self.close_cam_control)
 
     def write_msg(self, msg):
-        # signal_write_msg信号会触发这个函数
-        """
-        功能函数，向接收区写入数据的方法
-        信号-槽触发
-        tip：PyQt程序的子线程中，直接向主线程的界面传输字符是不符合安全原则的
-        :return: None
-        """
         self.data_log.append(msg)
 
     def SetMainUI(self, MainUi):
         MainUi.setObjectName("MainUi")
         MainUi.setWindowTitle("人脸识别智能柜")
         MainUi.setFixedSize(965, 605)
-
-        # 页面堆栈
         self.stack_pages = QtWidgets.QStackedWidget(MainUi)
         self.stack_pages.setGeometry(QtCore.QRect(320, 5, 640, 600))
         font = QtGui.QFont()
@@ -129,7 +117,6 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
         self.frame_start_time = now
 
     def draw_note(self, img_rd):
-        # 添加说明 / Add some notes
         cv2.putText(img_rd, "Face Register", (20, 40), self.font,
                     1, (255, 255, 255), 1, cv2.LINE_AA)
         cv2.putText(img_rd, "FPS:   " + str(self.fps.__round__(2)), (20, 100), self.font, 0.8, (0, 255, 0), 1,
@@ -140,13 +127,10 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
     def face_det(self, faces, frame):
         if len(faces) != 0:
             for k, d in enumerate(faces):
-                # 计算矩形框大小 / Compute the size of rectangle box
                 height = (d.bottom() - d.top())
                 width = (d.right() - d.left())
                 hh = int(height/2)
                 ww = int(width/2)
-
-                # 6. 判断人脸矩形框是否超出 480x640 / If the size of ROI > 480x640
                 if (d.right()+ww) > 640 or (d.bottom()+hh > 480) or (d.left()-ww < 0) or (d.top()-hh < 0):
                     cv2.putText(frame, "OUT OF RANGE", (20, 300),
                                 cv2.FONT_ITALIC, 0.8, (0, 0, 255), 1, cv2.LINE_AA)
@@ -156,12 +140,10 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
                         self.save_flag = 0
                 else:
                     color_rectangle = (255, 255, 255)
-
                 cv2.rectangle(frame,
                               tuple([d.left() - ww, d.top() - hh]),
                               tuple([d.right() + ww, d.bottom() + hh]),
                               color_rectangle, 2)
-                # 7. 根据人脸大小生成空的图像 / Create blank image according to the size of face detected
                 img_blank = np.zeros(
                             (int(height*2), width*2, 3), np.uint8)
                 if self.save_flag:
@@ -181,20 +163,15 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
                         QMessageBox.warning(
                             self, '警告', "先输入姓名检查是否有文件夹！", QMessageBox.Yes | QMessageBox.No,
                             QMessageBox.No)
-
                     self.save_flag = 0
         self.current_frame_faces_cnt = len(faces)
-
-        # 9. 生成的窗口添加说明文字 / Add note on cv2 window
         self.draw_note(frame)
         self.update_fps()
         return frame
 
     def save_features(self):
         self.data_log.clear()
-        # 获取已录入的最后一个人脸序号 / Get the order of latest person
         person_list = os.listdir("data/data_faces_from_camera/")
-
         with open("data/features_all.csv", "w", newline="") as csvfile:
             writer = csv.writer(csvfile)
             for person in person_list:
@@ -211,15 +188,13 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
         if not cap.isOpened():
             raise ValueError("Video open failed.")
         ret, frame = cap.read()
-
         while ret:
             ret, frame = cap.read()
             if ret:
                 frame = cv2.flip(frame, 1)
-                faces = detector(frame, 0)         # Use Dlib face detector
+                faces = detector(frame, 0)
                 frame = self.face_det(faces, frame)
                 show_frame(frame, self.registerpage.register_page)
-
             if cv2.waitKey(25) & self.stopEvent.is_set() == True:
                 self.stopEvent.clear()
                 self.registerpage.opencam_btn.setEnabled(True)
@@ -246,7 +221,6 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
         if not cap.isOpened():
             raise ValueError("Video open failed.")
         ret, frame = cap.read()
-
         while ret:
             ret, frame = cap.read()
             if ret:
@@ -258,9 +232,7 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
                 else:
                     self.send_name = ""
                     self.data_log.append("未检测到人脸\n" )
-
                 show_frame(frame, self.recognitionpage.recognition_page)
-
             if cv2.waitKey(25) & self.stopEvent_control.is_set() == True:
                 self.stopEvent_control.clear()
                 self.recognitionpage.opencam_btn.setEnabled(True)
@@ -285,10 +257,6 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
         self.data_log.clear()
 
     def tcp_client_start(self):
-        """
-        功能函数，TCP客户端连接其他服务端的方法
-        :return:
-        """
         self.tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
             address = (str(self.lineEdit_ip.text()),
@@ -308,7 +276,6 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
                 self.client_th = threading.Thread(
                     target=self.tcp_client_concurrency, args=(address,))
                 self.client_th.start()
-                
                 self.send_th = threading.Thread(target=self.tcp_send_name)
                 self.send_th.start()
                 msg = 'TCP客户端已连接IP:%s端口:%s\n' % address
@@ -316,10 +283,6 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
                 self.link = True
 
     def tcp_client_concurrency(self):
-        """
-        功能函数，用于TCP客户端创建子线程的方法，阻塞式接收
-        :return:
-        """
         while True:
             recv_msg = self.tcp_socket.recv(1024)
             if recv_msg:
@@ -333,10 +296,6 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
                 break
 
     def tcp_send(self, send_msg):
-        """
-        功能函数，用于TCP服务端和TCP客户端发送消息
-        :return: None
-        """
         if self.link is False:
             msg = '请选择服务，并点击连接网络\n'
             self.signal_write_msg.emit(msg)
@@ -351,10 +310,6 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
                 self.signal_write_msg.emit(msg)
 
     def tcp_close(self):
-        """
-        功能函数，关闭网络连接的方法
-        :return:
-        """
         try:
             self.tcp_socket.close()
             if self.link is True:
@@ -365,15 +320,10 @@ class FaceMainwindow(QMainWindow, tcp_moudle_ui):
         try:
             stopThreading.stop_thread(self.client_th)
             stopThreading.stop_thread(self.send_th)
-
         except Exception:
             pass
 
     def reset(self):
-        """
-        功能函数，将按钮重置为初始状态
-        :return:None
-        """
         self.link = False
 
     def tcp_send_name(self):

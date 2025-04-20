@@ -1,5 +1,4 @@
 # 从人脸图像文件中提取人脸特征存入 "features_all.csv" / Extract features from images and save into "features_all.csv"
-
 import os
 import dlib
 from skimage import io

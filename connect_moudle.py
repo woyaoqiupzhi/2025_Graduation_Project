@@ -51,7 +51,6 @@ class tcp_moudle_ui(object):
         self.register_btn = QtWidgets.QPushButton(carrier)
         self.register_btn.setGeometry(QtCore.QRect(5, 100, 310, 40))
         font = QtGui.QFont()
-        font.setFamily("7211")
         self.register_btn.setFont(font)
         self.register_btn.setStyleSheet(btn_style)
         self.register_btn.setText("人脸录入")
@@ -61,11 +60,9 @@ class tcp_moudle_ui(object):
         self.recognition_btn.setStyleSheet(btn_style)
         self.recognition_btn.setText("打开人脸识别")
 
-         # Logo
         self.label_log = QtWidgets.QLabel(carrier)
         self.label_log.setGeometry(QtCore.QRect(5, 200, 310, 390))
         font = QtGui.QFont()
-        font.setFamily("YOUSHEhaoshenti")
         font.setPointSize(12)
         self.label_log.setFont(font)
         self.label_log.setText("数据日志")

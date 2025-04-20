@@ -24,9 +24,11 @@ class register_moudle_ui(QWidget):
     def setup_component(self, carrier):
         self.register_page = QtWidgets.QLabel(carrier)
         self.register_page.setGeometry(QtCore.QRect(0, 0, 640, 480))
+
         font = QtGui.QFont()
         font.setFamily("Arial")
         font.setPointSize(36)
+
         self.register_page.setFont(font)
         self.register_page.setText("Cam Here")
         self.register_page.setObjectName("label")
@@ -77,9 +79,11 @@ class recognition_moudle_ui(QWidget):
     def setup_component(self, carrier):
         self.recognition_page = QtWidgets.QLabel(carrier)
         self.recognition_page.setGeometry(QtCore.QRect(0, 0, 640, 480))
+
         font = QtGui.QFont()
-        font.setFamily("Arial")
+        font.setFamily("SimSun")
         font.setPointSize(36)
+
         self.recognition_page.setFont(font)
         self.recognition_page.setText("Face Det")
         self.recognition_page.setObjectName("label")
