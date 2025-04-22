@@ -16,9 +16,17 @@ predictor = dlib.shape_predictor('data/data_dlib/shape_predictor_68_face_landmar
 # Dlib Resnet 人脸识别模型，提取 128D 的特征矢量 / Use Dlib resnet50 model to get 128D face descriptor
 face_reco_model = dlib.face_recognition_model_v1("data/data_dlib/dlib_face_recognition_resnet_model_v1.dat")
 
-# 返回单张图像的 128D 特征 / Return 128D features for single image
-# Input:    path_img           <class 'str'>
-# Output:   face_descriptor    <class 'dlib.vector'>
+#* 功能：从单张图像中提取128维人脸特征向量
+#* 输入：图像文件路径（str字符串类型）
+#* 处理流程：
+#  - 读取图像
+#  - 使用detector检测人脸
+#  - 如果检测到人脸：
+#    - 使用predictor获取人脸关键点
+#    - 使用face_reco_model计算128维特征向量
+#  - 如果未检测到人脸：
+#    - 返回0
+#* 输出：人脸特征向量（dlib.vector类型）或0（未检测到人脸时）
 def return_128d_features(path_img):
     img_rd = io.imread(path_img)
     faces = detector(img_rd, 1)
@@ -35,9 +43,18 @@ def return_128d_features(path_img):
         print("no face")
     return face_descriptor
 
-# 返回 personX 的 128D 特征均值 / Return the mean value of 128D face descriptor for person X
-# Input:    path_faces_personX       <class 'str'>
-# Output:   features_mean_personX    <class 'numpy.ndarray'>
+#* 功能：计算某个人多张人脸图像的128维特征均值
+#* 输入：包含某人多张人脸图像的文件夹路径
+#* 处理流程：
+#  - 获取文件夹中所有图像
+#  - 对每张图像：
+#    - 调用return_128d_features()提取特征
+#    - 如果成功提取特征，将特征添加到列表中
+#  - 如果成功提取了特征：
+#    - 计算所有特征的均值向量
+#  - 如果没有提取到任何特征：
+#    - 返回128维的零向量
+#* 输出：128维特征均值向量（numpy.ndarray类型）
 def return_features_mean_personX(path_faces_personX):
     features_list_personX = []
     photos_list = os.listdir(path_faces_personX)
